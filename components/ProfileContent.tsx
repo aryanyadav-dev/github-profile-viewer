@@ -220,26 +220,18 @@ export function ProfileContent({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <InfiniteScroll
-            dataLength={repositories.length}
-            next={loadMoreRepositories}
-            hasMore={hasMore}
-            loader={
-              <div className="text-center py-8">
-                <div className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                  <span>Loading more repositories...</span>
-                </div>
-              </div>
-            }
-            className="space-y-4"
-          >
+          <div className="space-y-4">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {filterAndSortRepositories(repositories).map((repo) => (
                 <RepositoryCard key={repo.id} repository={repo} languageColors={languageColors} />
               ))}
             </div>
-          </InfiniteScroll>
+            {repositories.length > 0 && (
+              <div className="text-center text-sm text-slate-600 dark:text-slate-400 mt-4">
+                Showing all {repositories.length} repositories
+              </div>
+            )}
+          </div>
         </motion.div>
       </div>
     </div>

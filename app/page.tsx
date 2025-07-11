@@ -248,26 +248,43 @@ export default function GitHubProfileViewer() {
       })
       const orgsData = await orgsResponse.json()
 
-      // Fetch repositories with pagination
-      const reposResponse = await fetch(
-        `https://api.github.com/users/${username}/repos?sort=updated&per_page=30&page=1`,
-        { headers: getHeaders() }
-      )
-      
-      if (!reposResponse.ok) {
-        throw new Error('Failed to fetch repositories')
+      // Fetch ALL repositories
+      let allRepos: Repository[] = [];
+      let pageNum = 1;
+      let hasNextPage = true;
+
+      while (hasNextPage) {
+        const reposResponse = await fetch(
+          `https://api.github.com/users/${username}/repos?sort=updated&per_page=100&page=${pageNum}`,
+          { headers: getHeaders() }
+        );
+
+        if (!reposResponse.ok) {
+          throw new Error('Failed to fetch repositories');
+        }
+
+        const reposData = await reposResponse.json();
+        if (!reposData || reposData.length === 0) {
+          hasNextPage = false;
+        } else {
+          allRepos = [...allRepos, ...reposData];
+          const linkHeader = reposResponse.headers.get('Link');
+          hasNextPage = linkHeader?.includes('rel="next"') ?? false;
+          pageNum++;
+        }
+
+        // Check rate limit after each page
+        const currentRateLimit = await checkRateLimit();
+        if (currentRateLimit && currentRateLimit.remaining <= 0) {
+          setError(`Note: Only ${allRepos.length} repositories loaded. Rate limit reached.`);
+          hasNextPage = false;
+        }
       }
-      
-      const reposData = await reposResponse.json()
-      
-      // Check if there are more pages
-      const linkHeader = reposResponse.headers.get('Link')
-      const hasNextPage = linkHeader?.includes('rel="next"') ?? false
 
       setCurrentUser(userData)
-      setRepositories(reposData || [])
+      setRepositories(allRepos)
       setOrganizations(orgsData || [])
-      setHasMore(hasNextPage)
+      setHasMore(false) // Since we loaded all repos at once
       updateURL(username)
 
       // Fetch starred repositories
@@ -290,41 +307,10 @@ export default function GitHubProfileViewer() {
     }
   }
 
-  // Modify loadMoreRepositories to check rate limit first
+  // Remove loadMoreRepositories since we're loading all at once
   const loadMoreRepositories = async () => {
-    if (!hasMore || loading || !currentUser) return;
-
-    try {
-      // Check rate limit before making requests
-      const rateLimitData = await checkRateLimit();
-      if (rateLimitData && rateLimitData.remaining <= 0) {
-        throw new Error(`GitHub API rate limit exceeded. ${getResetTimeString(rateLimitData.reset)}`);
-      }
-
-      const nextPage = page + 1;
-      const response = await fetch(
-        `https://api.github.com/users/${currentUser.login}/repos?sort=updated&per_page=30&page=${nextPage}`,
-        { headers: getHeaders() }
-      );
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          throw new Error('GitHub API rate limit exceeded. Please try again later.')
-        }
-        throw new Error('Failed to load more repositories')
-      }
-
-      const newRepos = await response.json();
-      const linkHeader = response.headers.get('Link');
-      const hasNextPage = linkHeader?.includes('rel="next"') ?? false;
-
-      setRepositories(prev => [...prev, ...(Array.isArray(newRepos) ? newRepos : [])]);
-      setHasMore(hasNextPage);
-      setPage(nextPage);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load more repositories');
-      setHasMore(false);
-    }
+    // This is now a no-op since we load all repositories at once
+    return;
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -369,6 +355,32 @@ export default function GitHubProfileViewer() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      {/* Developer Attribution */}
+      <a
+        href="https://aryanyadav-portfolio.vercel.app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed top-4 left-6 z-50"
+      >
+        <div className="group flex items-center gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+          <div className="relative w-8 h-8">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse"></div>
+            <div className="absolute inset-0.5 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center text-sm font-bold">AY</div>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-200 dark:to-slate-300 bg-clip-text text-transparent group-hover:to-blue-600 dark:group-hover:to-blue-400 transition-all duration-300">
+              Aryan Yadav
+            </span>
+            <span className="text-xs text-slate-600 dark:text-slate-400">Developer</span>
+          </div>
+          <div className="relative overflow-hidden w-4 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute inset-y-0 -left-2 w-2 bg-gradient-to-r from-transparent to-blue-500/20 dark:to-blue-400/20 group-hover:animate-[slide 1s ease-in-out infinite]"></div>
+            <div className="absolute inset-y-0 -left-1 w-2 bg-gradient-to-r from-transparent to-blue-500/20 dark:to-blue-400/20 group-hover:animate-[slide 1s ease-in-out infinite] delay-75"></div>
+            <div className="absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-transparent to-blue-500/20 dark:to-blue-400/20 group-hover:animate-[slide 1s ease-in-out infinite] delay-150"></div>
+          </div>
+        </div>
+      </a>
+
       {/* Header Section */}
       <div className="w-full max-w-[1400px] mx-auto px-6 py-12">
         {/* API Status */}

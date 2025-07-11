@@ -1,66 +1,34 @@
-# Gitviewer
+# GitSearch
 
-A powerful, AI-enhanced GitHub profile analysis tool built with Next.js that provides deep insights into GitHub profiles, repositories, and development patterns.
+A modern, elegant GitHub profile viewer that provides a seamless experience for exploring GitHub profiles and repositories. Built with Next.js and featuring a beautiful, responsive design with real-time API status monitoring.
 
 ## Features
 
-- **AI-Powered Profile Analysis**: Advanced analysis of GitHub profiles with dynamic scoring across multiple metrics:
-  - **Activity Level** (100-point scale):
-    - Evaluates contribution frequency
-    - Analyzes commit density
-    - Tracks repository creation rate
-    - Weighted factors: Commits per year (40%), contribution density (30%), public repos (30%)
-
-  - **Code Quality** (100-point scale):
-    - Analyzes documentation completeness
-    - Evaluates project descriptions
-    - Measures project popularity
-    - Weighted factors: README presence (40%), descriptions (30%), bio (20%), average stars (10%)
-
-  - **Collaboration** (100-point scale):
-    - Measures community interaction
-    - Analyzes pull request patterns
-    - Tracks issue engagement
-    - Weighted factors: Pull Requests (50%), Forks (25%), Issues (25%)
-
-  - **Project Diversity** (100-point scale):
-    - Evaluates programming language variety
-    - Analyzes project topics
-    - Considers repository count
-    - Weighted factors: Languages (45%), Topics (30%), Repository count (25%)
-
-  - **Community Impact** (100-point scale):
-    - Assesses overall influence
-    - Measures project reach
-    - Analyzes community engagement
-    - Weighted factors: Forks (50%), Watchers (30%), Stars (20%)
-
-- **Dynamic Analysis Engine**:
-  - Real-time calculation of metrics
-  - Contextual scoring based on GitHub ecosystem
-  - Personalized improvement suggestions
-  - Automatic updates with new data
+- **Modern UI/UX**:
+  - Beautiful blue-indigo gradient theme throughout the interface
+  - Elegant search bar with gradient-styled button
+  - Dark mode support with custom favicon
+  - Retro-styled developer attribution card
+  - Responsive design for all screen sizes
 
 - **Profile Features**:
   - Quick user search by username
   - Comprehensive profile overview
-  - GitHub statistics and metrics
-  - Organization memberships
-  - Location and contact information
+  - Real-time GitHub API status indicator
+  - Complete repository listing (up to API rate limit)
+  - Repository count display
 
-- **Repository Management**:
-  - Public repositories list with filtering
-  - Starred repositories showcase
-  - Language and topic analysis
+- **Repository Display**:
+  - Enhanced repository fetching (100 repositories per page)
+  - Clean and organized repository cards
   - Repository statistics and metrics
+  - Optimized loading performance
 
-- **Advanced UI/UX**:
-  - Interactive progress bars
-  - Dynamic score updates
-  - Contextual feedback
-  - Responsive design
-  - Dark mode support
-  - Smooth animations
+- **Technical Features**:
+  - Real-time API rate limit monitoring
+  - Optimized bundle sizes (main: 53.8 kB, shared JS: 100 kB)
+  - SEO-friendly with proper metadata
+  - Custom SVG favicon with dark mode support
 
 ## Technologies Used
 
@@ -68,10 +36,7 @@ A powerful, AI-enhanced GitHub profile analysis tool built with Next.js that pro
 - **React**: Frontend JavaScript library
 - **TypeScript**: Typed JavaScript for better code quality
 - **Tailwind CSS**: Utility-first CSS framework
-- **Radix UI**: Unstyled, accessible components
-- **Framer Motion**: Production-ready animations
-- **GitHub API**: Data source for analysis
-- **Custom Analytics Engine**: AI-powered profile scoring
+- **GitHub API**: Data source for repositories and profiles
 
 ## Getting Started
 
@@ -86,8 +51,8 @@ A powerful, AI-enhanced GitHub profile analysis tool built with Next.js that pro
 1. Create a GitHub Personal Access Token:
    - Go to GitHub Settings > Developer Settings > Personal Access Tokens > Tokens (classic)
    - Click "Generate new token (classic)"
-   - Give it a name (e.g., "Gitviewer App")
-   - Select scopes: `public_repo`, `read:user`, `read:org`
+   - Give it a name (e.g., "GitSearch")
+   - Select scopes: `read:user`, `read:org`, `public_repo`
    - Click "Generate token"
    - Copy the token immediately (you won't see it again!)
 
@@ -101,8 +66,8 @@ A powerful, AI-enhanced GitHub profile analysis tool built with Next.js that pro
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/gitviewer.git
-   cd gitviewer
+   git clone https://github.com/your-username/github-profile-viewer.git
+   cd github-profile-viewer
    ```
 
 2. Install dependencies:
@@ -124,49 +89,12 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 ## Usage
 
 1. Enter a GitHub username in the search bar
-2. View comprehensive profile analysis including:
-   - Overall profile score
-   - Individual metric scores
-   - Detailed breakdowns of each category
-   - Personalized improvement suggestions
-3. Explore repositories and contributions
-4. Review technical diversity and impact metrics
+2. View the user's profile information including:
+   - Profile details and statistics
+   - Complete list of public repositories
+   - Repository count and details
+3. Monitor the API rate limit status through the indicator
 
-## How the AI Analysis Works
-
-The AI analysis engine evaluates GitHub profiles across multiple dimensions:
-
-1. **Activity Analysis**:
-   - Calculates commit frequency
-   - Analyzes contribution patterns
-   - Evaluates repository creation rate
-   - Considers account age and consistency
-
-2. **Code Quality Assessment**:
-   - Reviews documentation practices
-   - Evaluates project descriptions
-   - Analyzes repository structure
-   - Considers community reception
-
-3. **Collaboration Metrics**:
-   - Tracks pull request patterns
-   - Analyzes issue engagement
-   - Evaluates community interaction
-   - Measures project maintenance
-
-4. **Technical Diversity**:
-   - Maps language proficiency
-   - Analyzes project topics
-   - Evaluates technical range
-   - Considers project variety
-
-5. **Community Impact**:
-   - Measures project adoption
-   - Analyzes community growth
-   - Evaluates user influence
-   - Tracks project success
-
-Each metric is calculated using weighted factors and normalized to a 100-point scale, providing comprehensive insights into a developer's GitHub presence.
 
 
 

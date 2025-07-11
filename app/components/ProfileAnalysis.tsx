@@ -217,7 +217,7 @@ export function ProfileAnalysis({ userData, repositories }: ProfileAnalysisProps
   };
 
   return (
-    <Card className="w-full mt-6">
+    <Card className="w-full">
       <CardContent className="p-6">
         <h2 className="text-2xl font-bold mb-4">AI Profile Analysis</h2>
         <div className="space-y-6">

@@ -23,6 +23,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import RepositoryCard from '@/components/RepositoryCard'
 import { ProfileAnalysis } from '@/app/components/ProfileAnalysis'
 import { languageColors } from '@/lib/utils'
+import { ProfileContent } from '@/components/ProfileContent'
 
 interface GitHubUser {
   login: string
@@ -367,327 +368,109 @@ export default function GitHubProfileViewer() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Github className="w-8 h-8 text-slate-700 dark:text-slate-300" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-              GitViewer
-            </h1>
-          </div>
-          <p className="text-slate-600 dark:text-slate-400 text-lg">
-            Discover profiles, repositories, and developer insights
-          </p>
-          {rateLimit && (
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-              API Calls Remaining: {rateLimit.remaining}/{rateLimit.limit}
-              {rateLimit.remaining === 0 && (
-                <span className="block text-amber-600 dark:text-amber-400">
-                  {getResetTimeString(rateLimit.reset)}
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      {/* Header Section */}
+      <div className="w-full max-w-[1400px] mx-auto px-6 py-12">
+        {/* API Status */}
+        {rateLimit && (
+          <div className="absolute top-4 right-6">
+            <div className="flex items-center gap-2 text-sm bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm">
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${rateLimit.remaining > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+                <span className="text-slate-600 dark:text-slate-400">
+                  API Status: {rateLimit.remaining > 0 ? 'Active' : 'Rate Limited'}
                 </span>
-              )}
-            </p>
-          )}
-        </motion.div>
-
-        {/* Search */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md mx-auto mb-12"
-        >
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-            <Input
-              type="text"
-              placeholder="Enter GitHub username..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="pl-10 pr-20 h-12 text-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl shadow-lg"
-            />
-            <Button
-              onClick={() => searchUser(searchQuery)}
-              disabled={loading}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg"
-            >
-              {loading ? '...' : 'Search'}
-            </Button>
+              </div>
+              <span className="text-slate-500 dark:text-slate-500 border-l border-slate-200 dark:border-slate-700 pl-2">
+                {rateLimit.remaining}/{rateLimit.limit} calls remaining
+              </span>
+            </div>
           </div>
-        </motion.div>
+        )}
 
-        {/* Error */}
-        <AnimatePresence>
+        <div className="max-w-4xl mx-auto">
+          {/* Title Section */}
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <Github className="w-12 h-12 text-slate-700 dark:text-slate-300" />
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                GitViewer AI
+              </h1>
+            </div>
+            <p className="text-slate-600 dark:text-slate-400 text-xl">
+              Discover profiles, repositories, and developer insights
+            </p>
+          </div>
+
+          {/* Search Section */}
+          <div className="w-full max-w-2xl mx-auto">
+            <div className="relative">
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-200"></div>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Input
+                    type="text"
+                    placeholder="Enter GitHub username..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    className="pl-12 pr-24 h-14 text-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                  />
+                  <Button
+                    onClick={() => searchUser(searchQuery)}
+                    disabled={loading}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 px-6 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg font-medium text-base"
+                  >
+                    {loading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Searching</span>
+                      </div>
+                    ) : (
+                      'Search'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Error Message */}
           {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="max-w-md mx-auto mb-8"
-            >
-              <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+            <div className="w-full max-w-2xl mx-auto mt-6">
+              <Card className="border-0 bg-red-50 dark:bg-red-900/20 shadow-lg">
                 <CardContent className="p-4 text-center text-red-600 dark:text-red-400">
                   {error}
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
-
-        {/* Main Content */}
-        <AnimatePresence>
-          {currentUser && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-8"
-            >
-              {/* User Profile Card */}
-              <Card className="overflow-hidden border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
-                      <Avatar className="w-32 h-32 border-4 border-white dark:border-slate-700 shadow-lg">
-                        <AvatarImage src={currentUser.avatar_url || "/placeholder.svg"} alt={currentUser.name} />
-                        <AvatarFallback>{currentUser.login[0].toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                    </motion.div>
-
-                    <div className="flex-1 text-center md:text-left">
-                      <motion.h2
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="text-3xl font-bold text-slate-800 dark:text-slate-200 mb-2"
-                      >
-                        {currentUser.name || currentUser.login}
-                      </motion.h2>
-
-                      <motion.p
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="text-slate-600 dark:text-slate-400 text-lg mb-4"
-                      >
-                        @{currentUser.login}
-                      </motion.p>
-
-                      {currentUser.bio && (
-                        <motion.p
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.5 }}
-                          className="text-slate-700 dark:text-slate-300 mb-4 text-lg"
-                        >
-                          {currentUser.bio}
-                        </motion.p>
-                      )}
-
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        className="flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-400 mb-6"
-                      >
-                        {currentUser.location && (
-                          <div className="flex items-center gap-1">
-                            <MapPin className="w-4 h-4" />
-                            {currentUser.location}
-                          </div>
-                        )}
-                        {currentUser.company && (
-                          <div className="flex items-center gap-1">
-                            <Building className="w-4 h-4" />
-                            {currentUser.company}
-                          </div>
-                        )}
-                        {currentUser.blog && (
-                          <div className="flex items-center gap-1">
-                            <LinkIcon className="w-4 h-4" />
-                            <a
-                              href={currentUser.blog}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-blue-500"
-                            >
-                              {currentUser.blog}
-                            </a>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          Joined {formatDate(currentUser.created_at)}
-                        </div>
-                      </motion.div>
-
-                      {/* Stats */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.7 }}
-                        className="flex gap-6 justify-center md:justify-start"
-                      >
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-                            {currentUser.public_repos}
-                          </div>
-                          <div className="text-sm text-slate-600 dark:text-slate-400">Repositories</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{currentUser.followers}</div>
-                          <div className="text-sm text-slate-600 dark:text-slate-400">Followers</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{currentUser.following}</div>
-                          <div className="text-sm text-slate-600 dark:text-slate-400">Following</div>
-                        </div>
-                      </motion.div>
-
-                      {/* Organizations */}
-                      {organizations.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.8 }}
-                          className="flex flex-wrap gap-2 mt-4"
-                        >
-                          {organizations.map((org) => (
-                            <Avatar
-                              key={org.login}
-                              className="w-8 h-8 border-2 border-white dark:border-slate-700"
-                              title={org.login}
-                            >
-                              <AvatarImage src={org.avatar_url} alt={org.login} />
-                              <AvatarFallback>{org.login[0].toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                          ))}
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* AI Profile Analysis */}
-              <ProfileAnalysis 
-                userData={currentUser}
-                repositories={repositories}
-              />
-
-              {/* Repository Controls and List */}
-              {repositories.length > 0 && (
-                <div>
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.8 }}
-                    className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6"
-                  >
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-                      Public Repositories
-                    </h3>
-                    
-                    <div className="flex flex-wrap gap-4">
-                      {/* Language Filter */}
-                      <select
-                        value={languageFilter}
-                        onChange={(e) => setLanguageFilter(e.target.value)}
-                        className="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm"
-                      >
-                        <option value="all">All Languages</option>
-                        {getUniqueLanguages(repositories).map((lang) => (
-                          <option key={lang} value={lang}>
-                            {lang}
-                          </option>
-                        ))}
-                      </select>
-
-                      {/* Sort By */}
-                      <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as 'stars' | 'forks' | 'updated')}
-                        className="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm"
-                      >
-                        <option value="updated">Last Updated</option>
-                        <option value="stars">Stars</option>
-                        <option value="forks">Forks</option>
-                      </select>
-
-                      {/* Sort Order */}
-                      <select
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                        className="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm"
-                      >
-                        <option value="desc">Descending</option>
-                        <option value="asc">Ascending</option>
-                      </select>
-                    </div>
-                  </motion.div>
-
-                  <InfiniteScroll
-                    dataLength={repositories.length}
-                    next={loadMoreRepositories}
-                    hasMore={hasMore}
-                    loader={
-                      <div className="flex justify-center p-4">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                      </div>
-                    }
-                    className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-                  >
-                    {filterAndSortRepositories(repositories).map((repo: Repository) => (
-                      <RepositoryCard
-                        key={repo.id}
-                        repository={repo}
-                        languageColors={languageColors}
-                      />
-                    ))}
-                  </InfiniteScroll>
-
-                  {/* Remove RecommendedRepositories section */}
-                </div>
-              )}
-
-              {/* Starred Repositories */}
-              {starredRepositories.length > 0 && (
-                <div className="mt-12">
-                  <motion.h3
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 }}
-                    className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-6"
-                  >
-                    Starred Repositories
-                  </motion.h3>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {starredRepositories.map((repo: Repository, index: number) => (
-                      <motion.div
-                        key={repo.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.9 + index * 0.1 }}
-                      >
-                        <RepositoryCard
-                          repository={repo}
-                          languageColors={languageColors}
-                        />
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </div>
       </div>
-    </div>
+
+      {/* Profile Content */}
+      {currentUser && !error && (
+        <div className="w-full max-w-[1400px] mx-auto px-6 pb-12">
+          <ProfileContent
+            user={currentUser}
+            repositories={repositories}
+            organizations={organizations}
+            languageFilter={languageFilter}
+            sortBy={sortBy}
+            getUniqueLanguages={getUniqueLanguages}
+            setLanguageFilter={setLanguageFilter}
+            setSortBy={setSortBy}
+            setSortOrder={setSortOrder}
+            sortOrder={sortOrder}
+            hasMore={hasMore}
+            loadMoreRepositories={loadMoreRepositories}
+            languageColors={languageColors}
+            formatDate={formatDate}
+            filterAndSortRepositories={filterAndSortRepositories}
+          />
+        </div>
+      )}
+    </main>
   )
 }

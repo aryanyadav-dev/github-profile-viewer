@@ -71,53 +71,71 @@ export function ProfileAnalysis({ userData, repositories }: ProfileAnalysisProps
     setOverallScore(Math.round(totalScore));
   };
 
+  const calculateDiversityScore = () => {
+    if (repositories.length === 0) return 0;  // Return 0 if no repositories
+
+    // Calculate language diversity (45% of score)
+    const languages = new Set();
+    repositories.forEach(repo => {
+      if (repo.language) languages.add(repo.language);
+    });
+    const languageScore = Math.min(100, languages.size * 15);
+
+    // Calculate topic diversity (30% of score)
+    const topics = new Set();
+    repositories.forEach(repo => {
+      if (repo.topics) {
+        repo.topics.forEach((topic: string) => topics.add(topic));
+      }
+    });
+    const topicScore = Math.min(100, topics.size * 10);
+
+    // Repository count score (25% of score)
+    const repoScore = Math.min(100, repositories.length * 5);
+
+    // Calculate weighted final score
+    const score = (
+      (languageScore * 0.45) +  // 45% weight for languages
+      (topicScore * 0.30) +     // 30% weight for topics
+      (repoScore * 0.25)        // 25% weight for repository count
+    );
+
+    return Math.round(Math.max(0, Math.min(100, score)));  // Ensure score is between 0 and 100
+  };
+
   const calculateActivityScore = () => {
+    if (repositories.length === 0) return 0;  // Return 0 if no repositories
+
     const now = new Date();
     const createdAt = new Date(userData.created_at);
-    const accountAge = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24 * 365);
+    const accountAge = Math.max(0.1, (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24 * 365)); // Minimum 0.1 years to prevent division by zero
     
-    // Calculate average commits per repository
-    const totalCommits = repositories.reduce((total, repo) => {
+    const commitsPerYear = repositories.reduce((total, repo) => {
       return total + (repo.commits_count || 0);
-    }, 0);
-    
-    // More strict commits per year calculation
-    const commitsPerYear = totalCommits / accountAge;
-    const commitsScore = Math.min(100, (commitsPerYear / 500) * 40); // Requires 500 commits/year for max score
-    
-    // Calculate contribution density (repos per year)
+    }, 0) / accountAge;
+
     const contributionDensity = userData.public_repos / accountAge;
-    const densityScore = Math.min(100, (contributionDensity / 12) * 30); // Requires 12 repos/year for max score
     
-    // Calculate recency score (percentage of repos updated in last 3 months)
-    const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    let score = Math.min(100, 
+      (commitsPerYear / 200) * 40 + 
+      (contributionDensity * 30) +
+      (userData.public_repos > 0 ? 30 : 0)
+    );
     
-    const recentRepos = repositories.filter(repo => {
-      const lastUpdate = new Date(repo.updated_at);
-      return lastUpdate > threeMonthsAgo;
-    }).length;
-    
-    const recencyScore = (recentRepos / repositories.length) * 30;
-    
-    let score = commitsScore + densityScore + recencyScore;
-    
-    // Additional penalties
-    if (accountAge < 1) score *= 0.7; // Penalty for new accounts
-    if (repositories.length < 5) score *= 0.8; // Penalty for few repositories
-    
-    return Math.round(score);
+    return Math.round(Math.max(0, score));  // Ensure score is not negative
   };
 
   const calculateCodeQualityScore = () => {
-    const totalStars = repositories.reduce((sum, repo) => sum + repo.stargazers_count, 0);
-    const avgStars = totalStars / repositories.length || 0;
+    if (repositories.length === 0) return 0;  // Return 0 if no repositories
+
+    const totalStars = repositories.reduce((sum, repo) => sum + (repo.stargazers_count || 0), 0);
+    const avgStars = totalStars / repositories.length;
     
     const hasReadme = repositories.filter(repo => repo.has_readme).length;
-    const readmeRatio = hasReadme / repositories.length;
+    const readmeRatio = repositories.length > 0 ? hasReadme / repositories.length : 0;
     
     const hasDescription = repositories.filter(repo => repo.description).length;
-    const descriptionRatio = hasDescription / repositories.length;
+    const descriptionRatio = repositories.length > 0 ? hasDescription / repositories.length : 0;
 
     let score = Math.min(100,
       (avgStars * 10) +
@@ -126,11 +144,13 @@ export function ProfileAnalysis({ userData, repositories }: ProfileAnalysisProps
       (userData.bio ? 20 : 0)
     );
 
-    return Math.round(score);
+    return Math.round(Math.max(0, score));  // Ensure score is not negative
   };
 
   const calculateCollaborationScore = () => {
-    const forksReceived = repositories.reduce((sum, repo) => sum + repo.forks_count, 0);
+    if (repositories.length === 0) return 0;  // Return 0 if no repositories
+
+    const forksReceived = repositories.reduce((sum, repo) => sum + (repo.forks_count || 0), 0);
     const pullRequests = repositories.reduce((sum, repo) => sum + (repo.pull_requests_count || 0), 0);
     const issues = repositories.reduce((sum, repo) => sum + (repo.issues_count || 0), 0);
 
@@ -141,86 +161,15 @@ export function ProfileAnalysis({ userData, repositories }: ProfileAnalysisProps
       (userData.followers * 2)
     );
 
-    return Math.round(Math.min(score, 100));
-  };
-
-  const calculateDiversityScore = () => {
-    // Calculate language diversity
-    const languages = new Set();
-    const languageCounts: Record<string, number> = {};
-    
-    repositories.forEach(repo => {
-      if (repo.language) {
-        languages.add(repo.language);
-        languageCounts[repo.language] = (languageCounts[repo.language] || 0) + 1;
-      }
-    });
-
-    // Calculate language distribution score
-    const totalRepos = repositories.length;
-    const languageDistribution = Object.values(languageCounts).map(count => count / totalRepos);
-    const distributionScore = 1 - Math.max(...languageDistribution);
-    
-    // Calculate weighted language score (more languages = higher score, but with diminishing returns)
-    const languageScore = Math.min(100, (Math.log2(languages.size + 1) / Math.log2(11)) * 45);
-    
-    // Calculate topic diversity
-    const topics = new Set();
-    const topicCounts: Record<string, number> = {};
-    
-    repositories.forEach(repo => {
-      if (repo.topics) {
-        repo.topics.forEach((topic: string) => {
-          topics.add(topic);
-          topicCounts[topic] = (topicCounts[topic] || 0) + 1;
-        });
-      }
-    });
-
-    // Calculate topic distribution score
-    const topicDistribution = Object.values(topicCounts).map(count => count / totalRepos);
-    const topicDistributionScore = 1 - Math.max(...topicDistribution);
-    
-    // Calculate weighted topic score
-    const topicScore = Math.min(100, (Math.log2(topics.size + 1) / Math.log2(16)) * 30);
-    
-    // Project size diversity (small, medium, large projects)
-    const sizeCategories = {
-      small: 0,
-      medium: 0,
-      large: 0
-    };
-    
-    repositories.forEach(repo => {
-      if (repo.size < 1000) sizeCategories.small++;
-      else if (repo.size < 10000) sizeCategories.medium++;
-      else sizeCategories.large++;
-    });
-    
-    const sizeDiversityScore = Math.min(
-      25,
-      (sizeCategories.small > 0 ? 8 : 0) +
-      (sizeCategories.medium > 0 ? 8 : 0) +
-      (sizeCategories.large > 0 ? 9 : 0)
-    );
-
-    let score = 
-      languageScore * (0.7 + 0.3 * distributionScore) + // Language score with distribution factor
-      topicScore * (0.7 + 0.3 * topicDistributionScore) + // Topic score with distribution factor
-      sizeDiversityScore; // Project size diversity
-
-    // Penalties
-    if (languages.size === 1) score *= 0.7; // Single language penalty
-    if (topics.size < 3) score *= 0.8; // Few topics penalty
-    if (repositories.length < 5) score *= 0.8; // Few repositories penalty
-
-    return Math.round(Math.min(100, score));
+    return Math.round(Math.max(0, Math.min(100, score)));  // Ensure score is between 0 and 100
   };
 
   const calculateImpactScore = () => {
-    const totalStars = repositories.reduce((sum, repo) => sum + repo.stargazers_count, 0);
-    const totalWatchers = repositories.reduce((sum, repo) => sum + repo.watchers_count, 0);
-    const totalForks = repositories.reduce((sum, repo) => sum + repo.forks_count, 0);
+    if (repositories.length === 0) return 0;  // Return 0 if no repositories
+
+    const totalStars = repositories.reduce((sum, repo) => sum + (repo.stargazers_count || 0), 0);
+    const totalWatchers = repositories.reduce((sum, repo) => sum + (repo.watchers_count || 0), 0);
+    const totalForks = repositories.reduce((sum, repo) => sum + (repo.forks_count || 0), 0);
 
     let score = Math.min(100,
       (totalStars * 2) +
@@ -229,7 +178,7 @@ export function ProfileAnalysis({ userData, repositories }: ProfileAnalysisProps
       (userData.followers * 2)
     );
 
-    return Math.round(Math.min(score, 100));
+    return Math.round(Math.max(0, score));  // Ensure score is not negative
   };
 
   const getActivityDescription = (score: number) => {

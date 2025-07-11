@@ -1,0 +1,16 @@
+{
+  "name": "Gitviewer - GitHub Profile Analysis",
+  "short_name": "Gitviewer",
+  "description": "An intelligent GitHub profile viewer that provides AI-driven insights and analysis of your GitHub presence",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2D333B",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    }
+  ]
+} 

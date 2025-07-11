@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import RepositoryCard from '@/components/RepositoryCard'
+import { ProfileAnalysis } from '@/app/components/ProfileAnalysis'
 import { languageColors } from '@/lib/utils'
 
 interface GitHubUser {
@@ -66,6 +67,27 @@ interface Repository {
   size: number
 }
 
+interface RateLimit {
+  limit: number;
+  remaining: number;
+  reset: number;
+}
+
+// Add GitHub API configuration
+const GITHUB_API_TOKEN = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+
+const getHeaders = (): HeadersInit => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (GITHUB_API_TOKEN) {
+    headers.Authorization = `Bearer ${GITHUB_API_TOKEN}`;
+  }
+  
+  return headers;
+};
+
 export default function GitHubProfileViewer() {
   const router = useRouter()
   const pathname = usePathname()
@@ -84,6 +106,7 @@ export default function GitHubProfileViewer() {
   const [hasMore, setHasMore] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [rateLimit, setRateLimit] = useState<RateLimit | null>(null);
 
   // Handle URL parameters and browser navigation
   useEffect(() => {
@@ -138,6 +161,46 @@ export default function GitHubProfileViewer() {
     router.push(newURL)
   }
 
+  // Add rate limit check function
+  const checkRateLimit = async () => {
+    try {
+      const response = await fetch('https://api.github.com/rate_limit', {
+        headers: getHeaders()
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const { limit, remaining, reset } = data.rate;
+        setRateLimit({ limit, remaining, reset });
+        return { limit, remaining, reset };
+      }
+      return null;
+    } catch (err) {
+      console.error('Failed to check rate limit:', err);
+      return null;
+    }
+  };
+
+  // Format time until reset
+  const getResetTimeString = (resetTimestamp: number) => {
+    const now = Math.floor(Date.now() / 1000);
+    const waitSeconds = resetTimestamp - now;
+    
+    if (waitSeconds <= 0) return 'Rate limit will reset now';
+    
+    const hours = Math.floor(waitSeconds / 3600);
+    const minutes = Math.floor((waitSeconds % 3600) / 60);
+    const seconds = waitSeconds % 60;
+    
+    const parts = [];
+    if (hours > 0) parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+    if (minutes > 0) parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+    if (seconds > 0) parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
+    
+    return `Rate limit will reset in ${parts.join(', ')}`;
+  };
+
+  // Modify searchUser to check rate limit first
   const searchUser = async (username: string) => {
     if (!username.trim()) {
       updateURL('')
@@ -148,6 +211,12 @@ export default function GitHubProfileViewer() {
     setError(null)
 
     try {
+      // Check rate limit before making requests
+      const rateLimitData = await checkRateLimit();
+      if (rateLimitData && rateLimitData.remaining <= 0) {
+        throw new Error(`GitHub API rate limit exceeded. ${getResetTimeString(rateLimitData.reset)}`);
+      }
+
       // Reset state for new search
       setPage(1)
       setHasMore(true)
@@ -156,18 +225,38 @@ export default function GitHubProfileViewer() {
       setOrganizations([])
 
       // Fetch user data
-      const userResponse = await fetch(`https://api.github.com/users/${username}`)
-      if (!userResponse.ok) throw new Error('User not found')
+      const userResponse = await fetch(`https://api.github.com/users/${username}`, {
+        headers: getHeaders()
+      })
+      
+      if (!userResponse.ok) {
+        if (userResponse.status === 403) {
+          throw new Error('GitHub API rate limit exceeded. Please try again later.')
+        }
+        if (userResponse.status === 404) {
+          throw new Error('User not found')
+        }
+        throw new Error('Failed to fetch user data')
+      }
+      
       const userData = await userResponse.json()
 
       // Fetch organizations
-      const orgsResponse = await fetch(userData.organizations_url)
+      const orgsResponse = await fetch(userData.organizations_url, {
+        headers: getHeaders()
+      })
       const orgsData = await orgsResponse.json()
 
       // Fetch repositories with pagination
       const reposResponse = await fetch(
-        `https://api.github.com/users/${username}/repos?sort=updated&per_page=30&page=1`
+        `https://api.github.com/users/${username}/repos?sort=updated&per_page=30&page=1`,
+        { headers: getHeaders() }
       )
+      
+      if (!reposResponse.ok) {
+        throw new Error('Failed to fetch repositories')
+      }
+      
       const reposData = await reposResponse.json()
       
       // Check if there are more pages
@@ -175,17 +264,18 @@ export default function GitHubProfileViewer() {
       const hasNextPage = linkHeader?.includes('rel="next"') ?? false
 
       setCurrentUser(userData)
-      setRepositories(reposData)
-      setOrganizations(orgsData)
+      setRepositories(reposData || [])
+      setOrganizations(orgsData || [])
       setHasMore(hasNextPage)
       updateURL(username)
 
       // Fetch starred repositories
       const starredReposResponse = await fetch(
-        `https://api.github.com/users/${username}/starred?sort=updated&per_page=12`
+        `https://api.github.com/users/${username}/starred?sort=updated&per_page=12`,
+        { headers: getHeaders() }
       )
       const starredReposData = await starredReposResponse.json()
-      setStarredRepositories(starredReposData)
+      setStarredRepositories(starredReposData || [])
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -199,28 +289,42 @@ export default function GitHubProfileViewer() {
     }
   }
 
-  const loadMoreRepositories = () => {
-    if (hasMore && !loading && currentUser) {
-      setPage(prevPage => {
-        const nextPage = prevPage + 1
-        fetch(
-          `https://api.github.com/users/${currentUser.login}/repos?sort=updated&per_page=30&page=${nextPage}`
-        )
-          .then(response => {
-            const hasNextPage = response.headers.get('Link')?.includes('rel="next"') ?? false
-            setHasMore(hasNextPage)
-            return response.json()
-          })
-          .then(newRepos => {
-            setRepositories(prev => [...prev, ...newRepos])
-          })
-          .catch(err => {
-            setError(err instanceof Error ? err.message : 'Failed to load more repositories')
-          })
-        return nextPage
-      })
+  // Modify loadMoreRepositories to check rate limit first
+  const loadMoreRepositories = async () => {
+    if (!hasMore || loading || !currentUser) return;
+
+    try {
+      // Check rate limit before making requests
+      const rateLimitData = await checkRateLimit();
+      if (rateLimitData && rateLimitData.remaining <= 0) {
+        throw new Error(`GitHub API rate limit exceeded. ${getResetTimeString(rateLimitData.reset)}`);
+      }
+
+      const nextPage = page + 1;
+      const response = await fetch(
+        `https://api.github.com/users/${currentUser.login}/repos?sort=updated&per_page=30&page=${nextPage}`,
+        { headers: getHeaders() }
+      );
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error('GitHub API rate limit exceeded. Please try again later.')
+        }
+        throw new Error('Failed to load more repositories')
+      }
+
+      const newRepos = await response.json();
+      const linkHeader = response.headers.get('Link');
+      const hasNextPage = linkHeader?.includes('rel="next"') ?? false;
+
+      setRepositories(prev => [...prev, ...(Array.isArray(newRepos) ? newRepos : [])]);
+      setHasMore(hasNextPage);
+      setPage(nextPage);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load more repositories');
+      setHasMore(false);
     }
-  }
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -280,6 +384,16 @@ export default function GitHubProfileViewer() {
           <p className="text-slate-600 dark:text-slate-400 text-lg">
             Discover profiles, repositories, and developer insights
           </p>
+          {rateLimit && (
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+              API Calls Remaining: {rateLimit.remaining}/{rateLimit.limit}
+              {rateLimit.remaining === 0 && (
+                <span className="block text-amber-600 dark:text-amber-400">
+                  {getResetTimeString(rateLimit.reset)}
+                </span>
+              )}
+            </p>
+          )}
         </motion.div>
 
         {/* Search */}
@@ -460,6 +574,12 @@ export default function GitHubProfileViewer() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* AI Profile Analysis */}
+              <ProfileAnalysis 
+                userData={currentUser}
+                repositories={repositories}
+              />
 
               {/* Repository Controls and List */}
               {repositories.length > 0 && (

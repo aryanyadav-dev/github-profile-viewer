@@ -1,26 +1,37 @@
-import type { Metadata, Viewport } from 'next'
-import './globals.css'
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
 
-export const viewport: Viewport = {
-  themeColor: '#2D333B',
-  width: 'device-width',
-  initialScale: 1.0,
-}
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: 'Gitviewer - GitHub Profile Analysis',
-  description: 'An intelligent GitHub profile viewer that provides AI-driven insights and analysis of your GitHub presence',
-  generator: 'Next.js',
+  title: "GitSearch",
+  description: "Discover GitHub profiles, repositories, and developer insights",
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+      {
+        url: "/favicon-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/favicon-16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+      }
     ],
-    shortcut: ['/favicon.svg'],
     apple: [
-      { url: '/favicon.svg' }
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      }
     ],
   },
-  manifest: '/site.webmanifest',
 }
 
 export default function RootLayout({
@@ -30,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 }

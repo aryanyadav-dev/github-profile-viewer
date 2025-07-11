@@ -360,23 +360,35 @@ export default function GitHubProfileViewer() {
         href="https://aryanyadav-portfolio.vercel.app/"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed top-4 left-6 z-50"
+        className="fixed top-4 left-6 z-50 select-none"
       >
-        <div className="group flex items-center gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-          <div className="relative w-8 h-8">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse"></div>
-            <div className="absolute inset-0.5 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center text-sm font-bold">AY</div>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-200 dark:to-slate-300 bg-clip-text text-transparent group-hover:to-blue-600 dark:group-hover:to-blue-400 transition-all duration-300">
-              Aryan Yadav
-            </span>
-            <span className="text-xs text-slate-600 dark:text-slate-400">Developer</span>
-          </div>
-          <div className="relative overflow-hidden w-4 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="absolute inset-y-0 -left-2 w-2 bg-gradient-to-r from-transparent to-blue-500/20 dark:to-blue-400/20 group-hover:animate-[slide 1s ease-in-out infinite]"></div>
-            <div className="absolute inset-y-0 -left-1 w-2 bg-gradient-to-r from-transparent to-blue-500/20 dark:to-blue-400/20 group-hover:animate-[slide 1s ease-in-out infinite] delay-75"></div>
-            <div className="absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-transparent to-blue-500/20 dark:to-blue-400/20 group-hover:animate-[slide 1s ease-in-out infinite] delay-150"></div>
+        <div className="group relative">
+          {/* Main Card */}
+          <div className="relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)] group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:group-hover:shadow-[1px_1px_0px_0px_rgba(255,255,255,0.1)] transition-all duration-200">
+            <div className="flex items-center gap-2.5">
+              {/* Pixel Avatar */}
+              <div className="relative w-8 h-8 rounded-md overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 p-[1px]">
+                <div className="w-full h-full bg-white dark:bg-slate-800 rounded-[4px] flex items-center justify-center font-bold font-mono text-sm text-blue-600 dark:text-blue-400">
+                  AY
+                </div>
+              </div>
+              
+              {/* Text Content */}
+              <div className="flex flex-col">
+                <span className="font-mono text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-200 dark:to-slate-300 bg-clip-text text-transparent">
+                  Aryan Yadav
+                </span>
+                <span className="font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                  Developer
+                </span>
+              </div>
+
+              {/* Pixel Decoration */}
+              <div className="ml-1 flex space-x-0.5">
+                <div className="w-1.5 h-1.5 bg-blue-500/50 rounded-sm animate-pulse"></div>
+                <div className="w-1.5 h-1.5 bg-indigo-500/50 rounded-sm animate-pulse delay-75"></div>
+              </div>
+            </div>
           </div>
         </div>
       </a>
@@ -405,11 +417,11 @@ export default function GitHubProfileViewer() {
           <div className="text-center mb-12">
             <div className="flex items-center justify-center gap-3 mb-6">
               <Github className="w-12 h-12 text-slate-700 dark:text-slate-300" />
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-                GitViewer AI
+              <h1 className="text-5xl font-mono font-bold bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                GitSearch
               </h1>
             </div>
-            <p className="text-slate-600 dark:text-slate-400 text-xl">
+            <p className="text-slate-600 dark:text-slate-400 text-lg font-mono">
               Discover profiles, repositories, and developer insights
             </p>
           </div>

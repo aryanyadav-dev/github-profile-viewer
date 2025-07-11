@@ -76,17 +76,35 @@ export function ProfileAnalysis({ userData, repositories }: ProfileAnalysisProps
     const createdAt = new Date(userData.created_at);
     const accountAge = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24 * 365);
     
-    const commitsPerYear = repositories.reduce((total, repo) => {
+    // Calculate average commits per repository
+    const totalCommits = repositories.reduce((total, repo) => {
       return total + (repo.commits_count || 0);
-    }, 0) / accountAge;
-
-    const contributionDensity = userData.public_repos / accountAge;
+    }, 0);
     
-    let score = Math.min(100, 
-      (commitsPerYear / 200) * 40 + 
-      (contributionDensity * 30) +
-      (userData.public_repos > 0 ? 30 : 0)
-    );
+    // More strict commits per year calculation
+    const commitsPerYear = totalCommits / accountAge;
+    const commitsScore = Math.min(100, (commitsPerYear / 500) * 40); // Requires 500 commits/year for max score
+    
+    // Calculate contribution density (repos per year)
+    const contributionDensity = userData.public_repos / accountAge;
+    const densityScore = Math.min(100, (contributionDensity / 12) * 30); // Requires 12 repos/year for max score
+    
+    // Calculate recency score (percentage of repos updated in last 3 months)
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    
+    const recentRepos = repositories.filter(repo => {
+      const lastUpdate = new Date(repo.updated_at);
+      return lastUpdate > threeMonthsAgo;
+    }).length;
+    
+    const recencyScore = (recentRepos / repositories.length) * 30;
+    
+    let score = commitsScore + densityScore + recencyScore;
+    
+    // Additional penalties
+    if (accountAge < 1) score *= 0.7; // Penalty for new accounts
+    if (repositories.length < 5) score *= 0.8; // Penalty for few repositories
     
     return Math.round(score);
   };
@@ -127,23 +145,76 @@ export function ProfileAnalysis({ userData, repositories }: ProfileAnalysisProps
   };
 
   const calculateDiversityScore = () => {
+    // Calculate language diversity
     const languages = new Set();
+    const languageCounts: Record<string, number> = {};
+    
     repositories.forEach(repo => {
-      if (repo.language) languages.add(repo.language);
+      if (repo.language) {
+        languages.add(repo.language);
+        languageCounts[repo.language] = (languageCounts[repo.language] || 0) + 1;
+      }
     });
 
+    // Calculate language distribution score
+    const totalRepos = repositories.length;
+    const languageDistribution = Object.values(languageCounts).map(count => count / totalRepos);
+    const distributionScore = 1 - Math.max(...languageDistribution);
+    
+    // Calculate weighted language score (more languages = higher score, but with diminishing returns)
+    const languageScore = Math.min(100, (Math.log2(languages.size + 1) / Math.log2(11)) * 45);
+    
+    // Calculate topic diversity
     const topics = new Set();
+    const topicCounts: Record<string, number> = {};
+    
     repositories.forEach(repo => {
-      if (repo.topics) repo.topics.forEach((topic: string) => topics.add(topic));
+      if (repo.topics) {
+        repo.topics.forEach((topic: string) => {
+          topics.add(topic);
+          topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+        });
+      }
     });
 
-    let score = Math.min(100,
-      (languages.size * 15) +
-      (topics.size * 10) +
-      (repositories.length * 5)
+    // Calculate topic distribution score
+    const topicDistribution = Object.values(topicCounts).map(count => count / totalRepos);
+    const topicDistributionScore = 1 - Math.max(...topicDistribution);
+    
+    // Calculate weighted topic score
+    const topicScore = Math.min(100, (Math.log2(topics.size + 1) / Math.log2(16)) * 30);
+    
+    // Project size diversity (small, medium, large projects)
+    const sizeCategories = {
+      small: 0,
+      medium: 0,
+      large: 0
+    };
+    
+    repositories.forEach(repo => {
+      if (repo.size < 1000) sizeCategories.small++;
+      else if (repo.size < 10000) sizeCategories.medium++;
+      else sizeCategories.large++;
+    });
+    
+    const sizeDiversityScore = Math.min(
+      25,
+      (sizeCategories.small > 0 ? 8 : 0) +
+      (sizeCategories.medium > 0 ? 8 : 0) +
+      (sizeCategories.large > 0 ? 9 : 0)
     );
 
-    return Math.round(Math.min(score, 100));
+    let score = 
+      languageScore * (0.7 + 0.3 * distributionScore) + // Language score with distribution factor
+      topicScore * (0.7 + 0.3 * topicDistributionScore) + // Topic score with distribution factor
+      sizeDiversityScore; // Project size diversity
+
+    // Penalties
+    if (languages.size === 1) score *= 0.7; // Single language penalty
+    if (topics.size < 3) score *= 0.8; // Few topics penalty
+    if (repositories.length < 5) score *= 0.8; // Few repositories penalty
+
+    return Math.round(Math.min(100, score));
   };
 
   const calculateImpactScore = () => {

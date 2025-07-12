@@ -360,33 +360,33 @@ export default function GitHubProfileViewer() {
         href="https://aryanyadav-portfolio.vercel.app/"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed top-4 left-6 z-50 select-none"
+        className="absolute top-2 left-2 md:fixed md:top-4 md:left-6 z-50 select-none"
       >
         <div className="group relative">
           {/* Main Card */}
-          <div className="relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)] group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:group-hover:shadow-[1px_1px_0px_0px_rgba(255,255,255,0.1)] transition-all duration-200">
-            <div className="flex items-center gap-2.5">
+          <div className="relative bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-2 md:px-3.5 py-1 md:py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)] group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] dark:group-hover:shadow-[1px_1px_0px_0px_rgba(255,255,255,0.1)] transition-all duration-200">
+            <div className="flex items-center gap-1.5 md:gap-2.5">
               {/* Pixel Avatar */}
-              <div className="relative w-8 h-8 rounded-md overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 p-[1px]">
-                <div className="w-full h-full bg-white dark:bg-slate-800 rounded-[4px] flex items-center justify-center font-bold font-mono text-sm text-blue-600 dark:text-blue-400">
+              <div className="relative w-5 h-5 md:w-8 md:h-8 rounded-md overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 p-[1px]">
+                <div className="w-full h-full bg-white dark:bg-slate-800 rounded-[4px] flex items-center justify-center font-bold font-mono text-[10px] md:text-sm text-blue-600 dark:text-blue-400">
                   AY
                 </div>
               </div>
               
               {/* Text Content */}
               <div className="flex flex-col">
-                <span className="font-mono text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-200 dark:to-slate-300 bg-clip-text text-transparent">
+                <span className="font-mono text-[10px] md:text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-900 dark:from-slate-200 dark:to-slate-300 bg-clip-text text-transparent">
                   Aryan Yadav
                 </span>
-                <span className="font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                <span className="font-mono text-[8px] md:text-[11px] text-slate-600 dark:text-slate-400">
                   Developer
                 </span>
               </div>
 
               {/* Pixel Decoration */}
-              <div className="ml-1 flex space-x-0.5">
-                <div className="w-1.5 h-1.5 bg-blue-500/50 rounded-sm animate-pulse"></div>
-                <div className="w-1.5 h-1.5 bg-indigo-500/50 rounded-sm animate-pulse delay-75"></div>
+              <div className="ml-0.5 md:ml-1 flex space-x-0.5">
+                <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-blue-500/50 rounded-sm animate-pulse"></div>
+                <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-indigo-500/50 rounded-sm animate-pulse delay-75"></div>
               </div>
             </div>
           </div>
@@ -394,7 +394,7 @@ export default function GitHubProfileViewer() {
       </a>
 
       {/* Header Section */}
-      <div className="w-full max-w-[1400px] mx-auto px-6 py-12">
+      <div className="w-full max-w-[1400px] mx-auto px-6 pt-20 md:pt-12 pb-12">
         {/* API Status */}
         {rateLimit && (
           <div className="absolute top-4 right-6">

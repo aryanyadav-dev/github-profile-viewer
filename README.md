@@ -26,9 +26,33 @@ A modern, elegant GitHub profile viewer that provides a seamless experience for 
 
 - **Technical Features**:
   - Real-time API rate limit monitoring
-  - Optimized bundle sizes (main: 53.8 kB, shared JS: 100 kB)
   - SEO-friendly with proper metadata
   - Custom SVG favicon with dark mode support
+
+**AI Integration**:
+Analyzes GitHub profiles based on 5 key metrics:
+* Activity Level: Evaluates contribution frequency, commit density, and repository creation rate
+* Code Quality: Analyzes documentation, descriptions, and project popularity
+* Collaboration: Measures community interaction through PRs, issues, and forks
+* Project Diversity: Evaluates the variety of programming languages and topics
+* Community Impact: Assesses overall influence through stars, watchers, and followers  
+1. The analysis is dynamic and considers:
+    * Account age and activity patterns
+    * Repository quality and documentation
+    * Community engagement metrics
+    * Technical diversity
+    * Project impact and reach 
+2. Each metric is calculated using multiple factors and weighted appropriately:
+    * Activity Level: Commits per year (40%), contribution density (30%), having public repos (30%)
+    * Code Quality: Average stars (10%), README presence (40%), descriptions (30%), bio (20%)
+    * Collaboration: Forks (25%), PRs (50%), issues (25%)
+    * Project Diversity: Languages (45%), topics (30%), repository count (25%)
+    * Community Impact: Stars (20%), watchers (30%), forks (50%) 
+3. The UI shows:
+    * An overall score
+    * Individual metric scores with progress bars
+    * Contextual descriptions that change based on the score
+    * A modern, clean design that matches the app's aesthetic
 
 ## Technologies Used
 

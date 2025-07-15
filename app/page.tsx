@@ -254,7 +254,7 @@ export default function GitHubProfileViewer() {
       let hasNextPage = true;
 
       while (hasNextPage) {
-        const reposResponse = await fetch(
+      const reposResponse = await fetch(
           `https://api.github.com/users/${username}/repos?sort=updated&per_page=100&page=${pageNum}`,
           { headers: getHeaders() }
         );
@@ -350,7 +350,7 @@ export default function GitHubProfileViewer() {
             break
         }
         return sortOrder === "desc" ? compareValue : -compareValue
-      })
+    })
   }
 
   return (
@@ -358,8 +358,8 @@ export default function GitHubProfileViewer() {
       {/* Developer Attribution */}
       <a
         href="https://aryanyadav-portfolio.vercel.app/"
-        target="_blank"
-        rel="noopener noreferrer"
+                              target="_blank"
+                              rel="noopener noreferrer"
         className="absolute top-2 left-2 md:fixed md:top-4 md:left-6 z-50 select-none"
       >
         <div className="group relative">
@@ -370,8 +370,8 @@ export default function GitHubProfileViewer() {
               <div className="relative w-5 h-5 md:w-8 md:h-8 rounded-md overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 p-[1px]">
                 <div className="w-full h-full bg-white dark:bg-slate-800 rounded-[4px] flex items-center justify-center font-bold font-mono text-[10px] md:text-sm text-blue-600 dark:text-blue-400">
                   AY
-                </div>
-              </div>
+                    </div>
+                  </div>
               
               {/* Text Content */}
               <div className="flex flex-col">
@@ -381,16 +381,16 @@ export default function GitHubProfileViewer() {
                 <span className="font-mono text-[8px] md:text-[11px] text-slate-600 dark:text-slate-400">
                   Developer
                 </span>
-              </div>
+                              </div>
 
               {/* Pixel Decoration */}
               <div className="ml-0.5 md:ml-1 flex space-x-0.5">
                 <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-blue-500/50 rounded-sm animate-pulse"></div>
                 <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-indigo-500/50 rounded-sm animate-pulse delay-75"></div>
-              </div>
-            </div>
-          </div>
-        </div>
+                                </div>
+                                </div>
+                              </div>
+                            </div>
       </a>
 
       {/* Header Section */}
@@ -404,13 +404,13 @@ export default function GitHubProfileViewer() {
                 <span className="text-slate-600 dark:text-slate-400">
                   API Status: {rateLimit.remaining > 0 ? 'Active' : 'Rate Limited'}
                 </span>
-              </div>
+                              </div>
               <span className="text-slate-500 dark:text-slate-500 border-l border-slate-200 dark:border-slate-700 pl-2">
                 {rateLimit.remaining}/{rateLimit.limit} calls remaining
               </span>
-            </div>
-          </div>
-        )}
+                  </div>
+                </div>
+              )}
 
         <div className="max-w-4xl mx-auto">
           {/* Title Section */}
@@ -450,15 +450,15 @@ export default function GitHubProfileViewer() {
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                         <span>Searching</span>
-                      </div>
+                                  </div>
                     ) : (
                       'Search'
-                    )}
+                                )}
                   </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+                                </div>
+                                </div>
+                              </div>
+                            </div>
 
           {/* Error Message */}
           {error && (
@@ -466,9 +466,9 @@ export default function GitHubProfileViewer() {
               <Card className="border-0 bg-red-50 dark:bg-red-900/20 shadow-lg">
                 <CardContent className="p-4 text-center text-red-600 dark:text-red-400">
                   {error}
-                </CardContent>
-              </Card>
-            </div>
+                          </CardContent>
+                        </Card>
+                </div>
           )}
         </div>
       </div>
@@ -493,7 +493,7 @@ export default function GitHubProfileViewer() {
             formatDate={formatDate}
             filterAndSortRepositories={filterAndSortRepositories}
           />
-        </div>
+    </div>
       )}
     </main>
   )
